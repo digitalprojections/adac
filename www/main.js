@@ -39,13 +39,13 @@ var speed_dial_content = `
     <ons-fab style="width:0;">
       <ons-icon icon="md-flag"></ons-icon>
     </ons-fab>
-    <ons-speed-dial-item style="background-color: #cdfdcd1c;">
+    <ons-speed-dial-item style="background-color: #cdfdcd;">
       <ons-icon icon="md-check" value="Done" onclick="lot_kanri(event)"></ons-icon>
     </ons-speed-dial-item>
-    <ons-speed-dial-item style="background-color: #ffd2801c;">
+    <ons-speed-dial-item style="background-color: #ffd280;">
       <ons-icon icon="md-help" value="ASK" onclick="lot_kanri(event)"></ons-icon>
     </ons-speed-dial-item>
-    <ons-speed-dial-item style="background-color: #ffd4db1c;">
+    <ons-speed-dial-item style="background-color: #ffd4db;">
       <ons-icon icon="md-close-circle" value="Cancel" onclick="lot_kanri(event)"></ons-icon>
     </ons-speed-dial-item>
     
