@@ -4,8 +4,8 @@
  * and open the template in the editor.
  */
 var database_url = "https://www.jjinventorysystem.com/test/ajphp_v41.php"; //JJpurchase
-var username;
-var password;
+var username = Boolean(localStorage.username) ? localStorage.username : "";
+var password = Boolean(localStorage.password) ? localStorage.password : "";;
 var pager = !Boolean(localStorage.getItem("pager")) ? 10 : localStorage.getItem("pager");
 var startPage = 0; //pager value is the number of items/request results from this point onwards (indices of uniqunique_array) 
 var today;
@@ -39,6 +39,9 @@ var speed_dial_content = `
     <ons-fab style="width:0;">
       <ons-icon icon="md-flag"></ons-icon>
     </ons-fab>
+    <ons-speed-dial-item style="background-color: #000000;">
+      <ons-icon icon="md-eye" value="eye" onclick="lot_kanri(event)"></ons-icon>
+    </ons-speed-dial-item>
     <ons-speed-dial-item style="background-color: #cdfdcd;">
       <ons-icon icon="md-check" value="Done" onclick="lot_kanri(event)"></ons-icon>
     </ons-speed-dial-item>
@@ -47,12 +50,14 @@ var speed_dial_content = `
     </ons-speed-dial-item>
     <ons-speed-dial-item style="background-color: #ffd4db;">
       <ons-icon icon="md-close-circle" value="Cancel" onclick="lot_kanri(event)"></ons-icon>
-    </ons-speed-dial-item>
-    
+    </ons-speed-dial-item>    
+    <ons-speed-dial-item style="background-color: #24ff79;"  onclick="lot_kanri(event)" value="whatsapp">
+      <ons-icon icon="md-whatsapp" ></ons-icon>
+    </ons-speed-dial-item>    
+    <ons-speed-dial-item style="background-color: ##24a7ff;"  onclick="lot_kanri(event)" value="group">
+      <ons-icon icon="md-group" ></ons-icon>
+    </ons-speed-dial-item>    
   </ons-speed-dial>`;
-
-
-
 
 function get_auction_names() {
     current_array = [];
@@ -170,9 +175,16 @@ function ajax(d) {
 
 var login = function () {
 
+if(Boolean(localStorage.username))
+{
+    username = localStorage.username;
+    password = localStorage.password;
+}else {
     username = document.getElementById('username').value;
     password = document.getElementById('password').value;
-
+}
+    
+    
     //
     document.querySelector('#loading_circle').show();
 
@@ -196,8 +208,9 @@ var login = function () {
 
             } else if (data.indexOf("Granted") > 0) {
                 //ACCESS GRANTED
+                localStorage.username = username;
+                localStorage.password = password;
                 session = true;
-
                 ons.notification.toast('Login Success!', {timeout: 1000, animation: 'fall'});
                 get_auction_names();
                 fn.load('auctions.html');
@@ -479,11 +492,11 @@ function close_modals() {
 
 function lot_kanri(event) {
 
-    var et = event.target;
+    var et = event.currentTarget;
     var etppp = document.getElementsByClassName(et.parentElement.parentElement.parentElement.parentElement.getElementsByClassName("buyer_remark")[0].getAttribute("lotid"))[0];
     //console.log(et.parentElement.parentElement.parentElement.parentElement.getElementsByClassName("buyer_remark")[0]);
     var status = et.getAttribute("value"); //manage lot status task directive
-
+    console.log(status);
     switch (status)
     {
         case "Done":
@@ -518,6 +531,15 @@ function lot_kanri(event) {
             } else {
                 etppp.classList.add("Cancel");
             }
+            break;
+        case "whatsapp":
+            //apply a whatsapp mark to distinguish
+            var ect3p = event.currentTarget.parentElement.parentElement.parentElement;
+            window.plugins.socialsharing.shareViaWhatsApp(company_name +", "+ ect3p.getElementsByClassName("lotno")[0].getAttribute("stupidlot") + ", " + ect3p.getElementsByClassName("carname")[0].innerText, null /* img */, null /* url */, function() 
+            {
+                console.log('share ok')
+            });            
+            console.log("whatsapp");
             break;
     }
     etppp.getElementsByClassName("buyer_remark")[0].saveStatus(status);
@@ -1005,7 +1027,7 @@ function show_lists(listname)
             $("#main_table ons-list-item.Done").removeClass("hidden");
             $("#heading2").text(company_name + ": " + $("#main_table tr.Done").length);
             indexName = "lotid";
-            get_by_status("Done");
+            get_by_status("Done");//local_data_mobid
 
             break;
         case "ask":

@@ -242,9 +242,9 @@ function get_by_status(status) {
         }
         if (current_array.length > 0)
         {
-            show_selected_chunk(startPage, current_array, "lotid");
+            show_selected_chunk(startPage, current_array.length, "lotid");
         } else {
-            ons.notification.toast("No data");
+            ons.notification.toast("No data", {timeout:2000, animation:"ascend"});
         }
     };
     objectStoreRequest.onerror = function (event) {
@@ -302,9 +302,7 @@ function idb_add_lot(lot) {
     var caller = this;
     var tx = db.transaction("lot", "readwrite");
     var store = tx.objectStore("lot");
-
     store.put(lot);
-
     tx.oncomplete = function () {
         // All requests have succeeded and the transaction has committed.
         //console.log("lot saved");

@@ -48,5 +48,21 @@
     "variables": {
       "BILLING_KEY": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqfvxzJg84MeFPyNKfovsqcOKa50D5/wIbCDtoWEVK3n9Uoicru3DFWgoEsiEdLFic73Ar/gVIlJYkkLZDffOI5XhuELElg+FRjA39Lx7+5GXd8qAqFfw3EnBBJ+lIQSYfWkq1u3VAZO9Zb3lHvf/yJr8PK6LX87VtY4URFydxuXpB+ogIOo8IWA+1VRK0UvHZXJLm8LtPfMSpRipwtEoUTwuTqDZGuvzEMLq+WbUKBwcUbeAUSZTct8pukWvP7o+p0zHQFPKPVEIa1HSi8djresOpAxQ+LcYtuQ61arKRurPgd9Fb/foDvYWwSPGAtC7SPswXQknU5vs7YEQY+MZCQIDAQAB"
     }
+  },
+  "cordova-plugin-x-socialsharing": {
+    "source": {
+      "type": "registry",
+      "id": "cordova-plugin-x-socialsharing"
+    },
+    "is_top_level": true,
+    "variables": {}
+  },
+  "es6-promise-plugin": {
+    "source": {
+      "type": "registry",
+      "id": "es6-promise-plugin@^4.1.0"
+    },
+    "is_top_level": false,
+    "variables": {}
   }
 }
