@@ -7,3 +7,8 @@ build.json
 package.json
 package-lock.json
 nbproject/*
+/www/
+www/auction_data_module.js
+www/css/style.css
+www/index.html
+www/main.js
