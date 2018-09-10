@@ -8,8 +8,6 @@ var hyphen_today;
 function memory_init_data() {
 
 }
-
-
 window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction || {
     READ_WRITE: "readwrite"
@@ -86,30 +84,23 @@ function manage_object_stores(bdbName, storeName, rd) {
                 console.log(e.target.error.message, "store Name failed to create?");
             }
         }
-
     };
     request.onerror = function (e) {
         console.log(e.type);
     }
 }
-
-function get_by_auction() {          
+function get_by_auction() {
     hyphen_today = today.split("/").reverse().join("-");
-
     storeName = company_name + hyphen_today;
-
     console.log("get_by_auct", company_name, hyphen_today);
     if (bdb.objectStoreNames.contains(storeName))
     {
         //the storeName exists. Data also exists?
         console.log(storeName, "exists and data count is the same. Proceed to data retrieval");
-
         var store = bdb.transaction(storeName, "readonly").objectStore(storeName);
         var index = store.index('company_name, auction_date');
         console.log(company_name, storeName);
         keyRange = IDBKeyRange.only([company_name, hyphen_today]);
-
-
         console.log(index);
         // To use one of the key ranges, pass it in as the first argument of openCursor()/openKeyCursor()
         var request = index.count(keyRange);
@@ -117,22 +108,17 @@ function get_by_auction() {
             big_data = [];
             var cursor = event.target.result;
             console.log(cursor, "row counts");
-
             if (cursor == row_count) {
                 request = index.openCursor();
                 request.onsuccess = function (event) {
-                    var cursor = event.target.result;                    
-                    if (cursor) {                        
-                        
-                            big_data.push(cursor.value);
-                            cursor.continue();
-                        
-                        
+                    var cursor = event.target.result;
+                    if (cursor) {
+                        big_data.push(cursor.value);
+                        cursor.continue();
                     } else {
-                            big_data.myIndexOf = myIndex;
-                            create_unique_list();
-                            fn.load("main.html");
-                        
+                        big_data.myIndexOf = myIndex;
+                        create_unique_list();
+                        fn.load("main.html");
                     }
                 }
             } else {
@@ -151,7 +137,6 @@ function get_by_auction() {
         {
             console.log(e, "error loading data");
         }
-
     } else {
         bdb.close();
         console.log("closed bdb, storeName does not exist, will CREATE a store now");
@@ -165,25 +150,20 @@ function get_by_auction() {
         ajax(data);
     }
 }
-
 //recursive
 function show_selected_chunk(i, endPos, indexName)
 {
     //console.log("show_selected_chunk", company_name, hyphen_today, i, current_array.length, indexName);
-
     var tx = bdb.transaction(storeName, "readonly");
     var store = tx.objectStore(storeName);
     var page_data = [];
     var index = store.index(indexName);
-
-try{
-    request = index.openCursor(IDBKeyRange.only(current_array[i]));
-}
-    catch (e)
+    try {
+        request = index.openCursor(IDBKeyRange.only(current_array[i]));
+    } catch (e)
     {
         request = index.openCursor(IDBKeyRange.only(current_array[i]));
     }
-
     request.onsuccess = function (event) {
         var cursor = event.target.result;
         if (cursor) {
@@ -195,16 +175,16 @@ try{
                 ons.notification.alert("No data within the range");
             }
             cursor.continue();
-        } else {           
-                show_big_data(page_data);
-                page_data = [];
-            if (i < endPos-1 && i < current_array.length - 1)
+        } else {
+            show_big_data(page_data);
+            page_data = [];
+            if (i < endPos - 1 && i < current_array.length - 1)
             {
                 i++;
-               //console.log("loading ", i, startPage);
+                //console.log("loading ", i, startPage);
                 show_selected_chunk(i, endPos, indexName);
             } else {
-                console.log("i:", i, "startPage:", startPage, "endPos:", endPos, "current_array.length:",  current_array.length);
+                console.log("i:", i, "startPage:", startPage, "endPos:", endPos, "current_array.length:", current_array.length);
                 show_final_result();
             }
             //            
@@ -217,7 +197,7 @@ try{
 }
 
 function show_final_result() {
-    console.log('Entries all displayed.');
+    console.log('sample data', big_string.substr(0, 100));
     $("#main_table").html(big_string);
     big_string = "";
     document.querySelector('#loading_circle').hide();
@@ -243,10 +223,34 @@ function show_final_result() {
         $("#next_button").show();
     }
     //Math.ceil(current_array.length/pager) //get all page count
-
     //startPage/Number(pager)+1 //get the current page
+    $("#heading2").text(get_shortName(company_name) + ": " + String($("#main_table ons-list-item.top_bid").length) + ", " + (startPage / Number(pager) + 1) + "/" + Math.ceil(current_array.length / pager));
+    var lis = $("#main_table ons-list-item");
+    for (var j = 0; j < lis.length; j++)
+    {
+        if (lis[j].classList.contains("top_bid"))
+        {
+            var ttop = lis[j];
+            if (Boolean(cancel_remark_found(lis[j])))
+            {
+                console.log("OK");
+                var orow = document.createElement("ons-row");
+                orow.innerHTML = `<ons-col><ons-icon class="alertprice" style='color:red;' icon='md-alert-triangle'></ons-icon></ons-col>`;
+                ttop.querySelector(".rightside-lm").appendChild(orow);
+            }
+        }
+        else {
+            if (Boolean(cancel_remark_found(lis[j])))
+            {                
+                console.log("OK sublot");
+                var orow = document.createElement("ons-row");
+                orow.innerHTML = `<ons-col><ons-icon class="alertprice" style='color:red;' icon='md-alert-triangle'></ons-icon></ons-col>`;
+                ttop.querySelector(".rightside-lm").appendChild(orow);
+            } 
+            }
+    }
 
-    $("#heading2").text(get_shortName(company_name) + ": " + String($("#main_table ons-list-item.top_bid").length) + ", " + (startPage/Number(pager)+1) + "/" + Math.ceil(current_array.length/pager));
+    console.log('Entries all displayed.');
 }
 function update_entry()
 {

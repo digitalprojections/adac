@@ -3,10 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-var database_url = "https://www.jjinventorysystem.com/test/ajphp_v41.php"; //JJpurchase
+var database_url = "https://ajpage.janjapanweb.com/ajphp_v41.php"; //JJpurchase
 var username = Boolean(localStorage.username) ? localStorage.username : "";
 var password = Boolean(localStorage.password) ? localStorage.password : "";
-;
 var pager = !Boolean(localStorage.getItem("pager")) ? 10 : localStorage.getItem("pager");
 var startPage = 0; //pager value is the number of items/request results from this point onwards (indices of uniqunique_array) 
 var today;
@@ -14,13 +13,14 @@ var big_data = [];
 var page_data = [];
 var big_string = "";
 var sort_type;
+var listtype = "all";
 var session;
 var count_array = [];
 var unique_array = [];
 var current_array = [];
 var new_entries = [];
 var updated_entries = [];
-var ind_lot_active;
+var ind_lot_lotid;
 var ind_lot_index;
 var ind_lot_lotno;
 var ind_lot_stack = []; //for raw data
@@ -46,20 +46,17 @@ var speed_dial_content = `
       <ons-icon icon="md-flag"></ons-icon>
     </ons-fab>    
     <ons-speed-dial-item style="background-color: #cdfdcd;">
-      <ons-icon icon="md-check" value="Done" onclick="lot_kanri(event)"></ons-icon>
+      <ons-icon icon="md-check" value="done" onclick="lot_kanri(event)"></ons-icon>
     </ons-speed-dial-item>
     <ons-speed-dial-item style="background-color: #ffd280;">
-      <ons-icon icon="md-help" value="ASK" onclick="lot_kanri(event)"></ons-icon>
+      <ons-icon icon="md-help" value="ask" onclick="lot_kanri(event)"></ons-icon>
     </ons-speed-dial-item>
     <ons-speed-dial-item style="background-color: #ffd4db;">
-      <ons-icon icon="md-close-circle" value="Cancel" onclick="lot_kanri(event)"></ons-icon>
+      <ons-icon icon="md-close-circle" value="cancel" onclick="lot_kanri(event)"></ons-icon>
     </ons-speed-dial-item>    
     <ons-speed-dial-item style="background-color: #24ff79;"  onclick="lot_kanri(event)" value="whatsapp">
       <ons-icon icon="md-whatsapp" ></ons-icon>
-    </ons-speed-dial-item>    
-    <ons-speed-dial-item style="background-color: ##24a7ff;"  onclick="lot_kanri(event)" value="group">
-      <ons-icon icon="md-layers" ></ons-icon>
-    </ons-speed-dial-item>    
+    </ons-speed-dial-item>        
   </ons-speed-dial>`;
 
 var speed_dial_ind = `
@@ -81,40 +78,17 @@ var speed_dial_ind = `
     </ons-speed-dial-item>        
   </ons-speed-dial>`;
 
-var curcar = `<ons-carousel-item>     
-  </ons-carousel-item>`;
 
-var carousel_content = "";
-
-init_car_cont();
-
-function init_car_cont()
-{
-    carousel_content = `
-<ons-carousel style="height: 100%; width: 100%" initial-index="1" swipeable overscrollable auto-scroll auto-refresh class="maincarousel">
-  <ons-carousel-item>     
-  </ons-carousel-item>
-  ${curcar}
-    <ons-carousel-item>     
-  </ons-carousel-item>
-</ons-carousel>
-<script>
-$("ons-carousel.maincarousel").on("postchange", function(){
-carousel_change(event);
-}
-);
-</script>
-`;
-}
 
 function getcurcardetails()
 {
     var et = event.target;
+    ind_lot_lotid = et.getAttribute("lotid");
     var curcardetails = $(et).parent().parent().parent().parent();
     ind_lot_lotno = curcardetails.find(".lotno")[0].getAttribute("stupidlot").trim();
     ind_lot_index = current_array.indexOf(ind_lot_lotno);
     fn.load('details_page.html', {data: {title: 'Detail Page'}});
-    //console.log(et, ind_lot_index, curcardetails);    
+    console.log(et, curcardetails);
 }
 
 var myIndex = function (x)
@@ -134,128 +108,6 @@ var myIndex = function (x)
     return arr;
 }
 
-var populate_data = function ()
-{
-    var br = "<br>";
-
-    this.data = big_data.myIndexOf(ind_lot_lotno); //is an array of JSON objects
-    var caritem = this.getElementsByTagName("ons-carousel-item")[1];
-
-    caritem.setAttribute("class", this.data[0].lotid);
-    //img START
-    var imgcarousel = document.createElement("ons-carousel");
-    imgcarousel.setAttribute("initial-index", 1);
-    imgcarousel.setAttribute("swipeable", "true");
-    imgcarousel.setAttribute("auto-scroll", "true");
-    imgcarousel.setAttribute("class", "img");
-
-    var imgcarouselitem0 = document.createElement("ons-carousel-item");
-    var imgcarouselitem1 = document.createElement("ons-carousel-item");
-    var imgcarouselitem2 = document.createElement("ons-carousel-item");
-    imgcarousel.appendChild(imgcarouselitem0);
-    imgcarousel.appendChild(imgcarouselitem1);
-    imgcarousel.appendChild(imgcarouselitem2);
-    var indimg = document.createElement("img");
-    indimg.style = "height:269px; width:100%";
-    indimg.src = getOldURL(this.data[0].auction_sheet);
-    var indimgf = document.createElement("img");
-    indimgf.style = "width:100%;";
-    indimgf.src = getOldURL(this.data[0].front_image);
-    var indimgr = document.createElement("img");
-    indimgr.style = "width:100%;";
-    indimgr.src = getOldURL(this.data[0].rear_image);
-    imgcarouselitem0.appendChild(indimg);
-    imgcarouselitem1.appendChild(indimgf);
-    imgcarouselitem2.appendChild(indimgr);
-
-    //indimg.style = "width:100%;";
-    //var imgdiv = document.createElement("div");
-    //imgdiv.setAttribute("class", "center-content");
-    //imgdiv.appendChild(indimg);
-    var indpagecol = document.createElement("ons-col");
-    indpagecol.setAttribute("style", "height:30%")
-    var indpagerow = document.createElement("ons-row");
-    indpagerow.appendChild(imgcarousel);
-    indpagerow.appendChild(indpagecol);
-    caritem.appendChild(indpagerow);
-    imgcarousel.refresh();
-    //img END
-
-    //info section wrappers
-    var indpagerow2 = document.createElement("ons-row");
-    var indpagecol21 = document.createElement("ons-col");
-    var indpagecol22 = document.createElement("ons-col");
-    indpagerow2.appendChild(indpagecol21);
-    indpagerow2.appendChild(indpagecol22);
-    //info section wrappers END
-
-    //aucname lot
-    var company_name = document.createElement("h2");
-    company_name.innerHTML = this.data[0].company_name;
-    indpagecol21.appendChild(company_name);
-    var exlot_no = document.createElement("h3");
-    exlot_no.innerHTML = this.data[0].exlot_no;
-    indpagecol21.appendChild(exlot_no);
-    //aucname lot END
-    caritem.appendChild(indpagerow2);
-
-    //bid price
-    var bid_price = document.createElement("h2");
-    bid_price.innerHTML = this.data[0].bid_price != "" ? this.data[0].bid_price : "?";
-    indpagecol22.appendChild(bid_price);
-    var remarks = document.createElement("h4");
-    remarks.innerHTML = this.data[0].remarks;
-    indpagecol22.appendChild(remarks);
-
-    //remaining details
-    var remaining_details_row = document.createElement("ons-row");
-    var remaining_details_col0 = document.createElement("ons-col");
-    var remaining_details_col1 = document.createElement("ons-col");
-    var remaining_details_col2 = document.createElement("ons-col");
-
-    remaining_details_col0.innerHTML = this.data[0].car_name + br + this.data[0].type + br + this.data[0].grade;
-    remaining_details_col1.innerHTML = this.data[0].year + br + this.data[0].shift + br + this.data[0].mileage;
-    remaining_details_col2.innerHTML = "検：" + this.data[0].inspect + br + "評：" + this.data[0].condition + " (" + this.data[0].ext_grade + "/" + this.data[0].int_grade + ")";
-
-    remaining_details_row.appendChild(remaining_details_col0);
-    remaining_details_row.appendChild(remaining_details_col1);
-    remaining_details_row.appendChild(remaining_details_col2);
-    caritem.appendChild(remaining_details_row);
-    //remaining details END
-
-    var ind_remark_row = document.createElement("ons-row");
-    var ind_remarkcol = document.createElement("ons-col");
-    var ind_input = document.createElement("div");
-    ind_input.id = "indinput";
-    ind_input.setAttribute("class", "buyer_remark");
-    ind_input.attachMessageData = attach_message_data;
-    ind_input.getByLotid = get_by_lotid;
-    ind_input.idbAddLot = idb_add_lot;
-    ind_input.updateLot = update_entry;
-    ind_input.saveStatus = save_status;
-    ind_input.getByLotid(); //also get the status?
-    ind_input.setAttribute("lotid", this.data[0].lotid);
-
-    ind_remark_row.appendChild(ind_remarkcol);
-    ind_remarkcol.appendChild(ind_input);
-    caritem.appendChild(ind_remark_row);
-
-    //control&&management
-    var ind_contolpanel_row = document.createElement("ons-row");
-    var ind_conpancol = document.createElement("ons-col");
-    ind_contolpanel_row.appendChild(ind_conpancol);
-    ind_conpancol.innerHTML = speed_dial_ind;
-    caritem.appendChild(ind_contolpanel_row);
-    //control&&management END
-
-    document.querySelector("ons-speed-dial").showItems();
-    $(".fab--bottom__right").css("bottom", "0");
-    //
-    //logging
-    console.log(this.data[0], this.data);
-
-    $(".buyer_remark")[0].getByLotid();
-}
 function get_auction_names() {
     current_array = [];
     startPage = 0;
@@ -465,7 +317,7 @@ function get_shortName(c)
         c = c.split(" ");
         for (var i = 0; i < c.length; i++)
         {
-            c[i] = c[i].substr(0, 3);
+            c[i] = c[i].length > 3 ? c[i].substr(0, 3) : c[i];
         }
         c = c.join("-");
     }
@@ -527,25 +379,28 @@ function show_big_data(page_data) {
 
     page_data.sort(function (a, b) {
         return Number(a.lot_no.substr(a.lot_no.indexOf("//") + 2)) - Number(b.lot_no.substr(b.lot_no.indexOf("//") + 2)) || getRealNumber(Number(b.bid_price)) - getRealNumber(Number(a.bid_price));
-    });
+    });    
     for (i in page_data) {
         var lotno = page_data[i]["exlot_no"];
-        //console.log(page_data[i]["exlot_no"], 'page_data[i]["exlot_no"]');
+        
         if (Number(lotno) >= Number(startIndex) && Number(lotno) <= Number(endIndex))
         {
-
-
+            
             if (i == 0)
             {
                 //lazy image
-                big_string += `<ons-list-item tappable class='top_bid ${page_data[i]["id"] } new_data_${checkTime(page_data[i]["created_at"]) } new_price_${ checkTime(page_data[i]["updated_at"]) }' onmousedown='toggle_children(event)'><div class='left'><ons-row><ons-col><img class='list-item__thumbnail' src='${ getOldURL(page_data[i]["front_image"]) }' onmousedown='getcurcardetails(event)'></ons-col></ons-row>`;
-                //hiding images temporarily
-                //big_string += "<tr class='top_bid new_data_" + checkTime(page_data[i]["created_at"]) + " new_price_" + checkTime(page_data[i]["updated_at"]) + "' onmousedown='toggle_children(event)'><td>";
-                //unique_array.push(page_data[i]["lot_no"]);
+                big_string += `<ons-list-item tappable class='top_bid ${page_data[i]["id"] } new_data_${checkTime(page_data[i]["created_at"]) } new_price_${ checkTime(page_data[i]["updated_at"]) }' onmousedown='toggle_children(event)'><div class='left'><ons-row><ons-col><img class='list-item__thumbnail' src='${ getOldURL(page_data[i]["front_image"]) }' onmousedown='getcurcardetails(event)' lotid='${page_data[i]["id"]}'></ons-col></ons-row>`;
+                if(page_data.length>1)
+                {
+                    big_string += `<ons-row><ons-col><ons-icon style='color: orange;' icon='md-folder'></ons-icon></ons-col></ons-row>`;                 
+                    
+                }
+                
 
             } else {
-
-                big_string += `<ons-list-item tappable class='hidden ${page_data[i]["id"] } losing new_data_${ checkTime(page_data[i]["created_at"]) } new_price_${ checkTime(page_data[i]["updated_at"]) }'><ons-row><ons-col><span class='aucname'>${ page_data[i]["company_name"] }</span></ons-col></ons-row>`;
+                //<ion-icon name="arrow-round-up"></ion-icon>
+                big_string += `<ons-list-item tappable class='secondary hidden ${page_data[i]["id"] } losing new_data_${ checkTime(page_data[i]["created_at"]) } new_price_${ checkTime(page_data[i]["updated_at"]) }' onmousedown='toggle_children(event)'><div class='left'><ons-row><ons-col><ons-icon style="color: orange;" icon="md-long-arrow-up"></ons-icon></ons-col></ons-row>`;
+                
 
             }
             var bidprice = page_data[i]["bid_price"];
@@ -564,7 +419,7 @@ function show_big_data(page_data) {
                 if (Number(bidprice) >= 500)
                 {
                     //the price was crazy style
-                    bidprice = get_fixed_price(bidprice) + get_fixed_price(price_adjuster);
+                    bidprice = get_fixed_price(bidprice);
                     bidprice = bidprice * 10000;
                 } else {
                     if (Number(bidprice) !== 0)
@@ -614,11 +469,12 @@ function show_big_data(page_data) {
             </span></ons-col></ons-row><ons-row><ons-col></div></ons-list-item>`;
         }
     }
-
-    rows = $(".lotno");
+    
     if (Boolean(check_kaishusu(page_data)))
     {
-        //console.log("old data found");
+        //a potential for future use. Old data creep in issue can be caught here
+        console.log("old data found");
+        ons.notification.alert("Old data in the list!");
     }
 
     if (!Boolean(big_string))
@@ -629,34 +485,57 @@ function show_big_data(page_data) {
 
 
 }
-
+function cancel_remark_found(bigdata)
+{
+    //console.log(bigdata);
+    var bul;
+   
+        if (bigdata.querySelector(".remarks").innerText.indexOf("x")>=0 || bigdata.querySelector(".bidprice").innerText.indexOf("x")>=0)
+        {
+            bul = true;
+        }
+    
+    return bul;
+}
+function get_current_onsrow_index(g, onsrows) {
+    var res;
+    for (var i = 0; i < onsrows.length; i++)
+    {
+        if (onsrows[i] == g)
+        {
+            res = i;
+        }
+    }
+    return res;
+}
 
 function toggle_children(event)
 {
+    var onsrows = document.querySelectorAll("#main_table ons-list-item");
 
-    //console.log(event.currentTarget);
     event.currentTarget.querySelector('ons-speed-dial').toggleItems();
 
-    var item = $(event.target).parent().find(".lotno")[0];
-    var s = $(event.target).parent().index();
-    ////console.log(event.target, s);
-    //
+    var item = event.currentTarget.querySelector(".lotno");
+
+    var targetIndex = get_current_onsrow_index(event.currentTarget, onsrows);
+
+    //var s = $(event.target).parent().index();
+    //console.log(event.currentTarget, item);
+
     //var sub_ar = [item];
 
-    for (var i = s + 1; i < rows.length; i++)
+    for (var i = targetIndex+1; i < onsrows.length; i++)
     {
-////console.log(rows[i]);
         try {
-            if (item.getAttribute("stupidlot") == rows[i].getAttribute("stupidlot") && rows[i].getAttribute("lotid") != item.getAttribute("lotid"))
+            if (item.getAttribute("stupidlot") == onsrows[i].querySelector(".lotno").getAttribute("stupidlot"))
             {
-//sub_ar.push(rows[i]);
-//$(item).parent().parent().removeClass("top_bid");
-                if ($(rows[i]).parent().parent().hasClass("hidden")) {
-                    $(rows[i]).parent().parent().removeClass("hidden");
+                //toggle
+                if ($(onsrows[i]).hasClass("hidden")) {
+                    $(onsrows[i]).removeClass("hidden");
                 } else {
-                    $(rows[i]).parent().parent().addClass("hidden");
+                    $(onsrows[i]).addClass("hidden");
                 }
-                console.log("looping ", i);
+                console.log("looping ", onsrows[i]);
             } else {
 //check the next row as item                        
                 console.log("loop end");
@@ -675,12 +554,7 @@ function toggle_children(event)
 function close_modals() {
     $("#remarkModal").fadeOut(100);
 }
-function indlot_kanri(event)
-{
-    var et = event.currentTarget;
-    etppp = et.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement;
-    console.log();
-}
+
 function lot_kanri(event) {
 
     var et = event.currentTarget;
@@ -696,21 +570,21 @@ function lot_kanri(event) {
     console.log(status);
     switch (status)
     {
-        case "Done":
-            etppp.classList.remove("ASK");
-            etppp.classList.remove("Cancel");
-            if (etppp.classList.contains("Done"))
+        case "done":
+            etppp.classList.remove("ask");
+            etppp.classList.remove("cancel");
+            if (etppp.classList.contains("done"))
             {
-                etppp.classList.remove("Done");
+                etppp.classList.remove("done");
                 status = "";
             } else {
-                etppp.classList.add("Done");
+                etppp.classList.add("done");
             }
             break;
-        case "ASK":
-            etppp.classList.remove("Done");
-            etppp.classList.remove("Cancel");
-            if (etppp.classList.contains("ASK"))
+        case "ask":
+            etppp.classList.remove("done");
+            etppp.classList.remove("cancel");
+            if (etppp.classList.contains("ask"))
             {
                 etppp.classList.remove("ASK");
                 status = "";
@@ -718,15 +592,15 @@ function lot_kanri(event) {
                 etppp.classList.add("ASK");
             }
             break;
-        case "Cancel":
-            etppp.classList.remove("ASK");
-            etppp.classList.remove("Done");
-            if (etppp.classList.contains("Cancel"))
+        case "cancel":
+            etppp.classList.remove("ask");
+            etppp.classList.remove("done");
+            if (etppp.classList.contains("cancel"))
             {
-                etppp.classList.remove("Cancel");
+                etppp.classList.remove("cancel");
                 status = "";
             } else {
-                etppp.classList.add("Cancel");
+                etppp.classList.add("cancel");
             }
             break;
         case "whatsapp":
@@ -741,44 +615,48 @@ function lot_kanri(event) {
 function shareIt(ect3p)
 {
     try {
-        window.plugins.socialsharing.shareViaWhatsApp(company_name + ", " + ect3p.getElementsByClassName("lotno")[0].getAttribute("stupidlot") + ", " + ect3p.getElementsByClassName("carname")[0].innerText, null /* img */, null /* url */, function ()
+        //Android APP share code
+        window.plugins.socialsharing.shareViaWhatsApp(company_name + ", lotno: " + ect3p.getElementsByClassName("lotno")[0].getAttribute("stupidlot") + ", model: " + ect3p.getElementsByClassName("carname")[0].innerText, null /* img */, null /* url */, function ()
         {
-            console.log('share ok')
+            console.log('share ok');
         });
     } catch (e)
     {
-
+        //Web APP share code
         if (navigator.share) {
-            try {
+            if (document.querySelector("#main_table"))
+            {
+                //LIST VIEW
+                try {
                 navigator.share({
                     title: 'Check lot',
-                    text: company_name + " " + ect3p.getElementsByClassName("lotno")[0].getAttribute("stupidlot") + " "  + big_data.myIndexOf(ect3p.getElementsByClassName("lotno")[0].getAttribute("stupidlot"))[0].auction_sheet + ", " + ect3p.getElementsByTagName("img")[0].src,
-                    
-                })
-                        .then(() => console.log('Successful share'))
-                        .catch((error) => console.log('Error sharing', error));
+                    text: company_name + ", lot: " + ect3p.getElementsByClassName("lotno")[0].getAttribute("stupidlot") + ", auction sheet: " + big_data.myIndexOf(ect3p.getElementsByClassName("lotno")[0].getAttribute("stupidlot"))[0].auction_sheet + ", front: " + ect3p.getElementsByTagName("img")[0].src,
+
+                });
+            } catch (e) {
+                
+            }
+            }
+            else {
+                //DETAILS PAGE
+                try {
+                navigator.share({
+                    title: 'Check lot',
+                    text: company_name + ", lot: " + ect3p.getElementsByClassName("lotno")[0].getAttribute("stupidlot") + ", auction sheet: " + big_data.myIndexOf(ect3p.getElementsByClassName("lotno")[0].getAttribute("stupidlot"))[0].auction_sheet + ", front: " + ect3p.getElementsByTagName("img")[0].src,
+
+                });
             } catch (e) {
                 navigator.share({
                     title: $("#indinput").text(),
-                    text: company_name + " lot:" + $("h3")[0].innerText + " bid:" + $("h2")[0].innerText + " " + " auction sheet:" + $("img")[0].src + " front image:" + $("img")[1].src,
-                })
-                        .then(() => console.log('Successful share'))
-                        .catch((error) => console.log('Error sharing', error));
+                    text: company_name + ", lot: " + $("#exlot")[0].innerText + ", bid: " + $("#bidprice")[0].innerText + ", buyer: " + $("#indinput").text() + ", auction sheet:" + $("img")[0].src + " front image:" + $("img")[1].src,
+                });
             }
+            }            
         }
     }
 
 }
 
-function manage_lots_status(lotid, status)
-{
-    switch (status)
-    {
-        case "Cancel":
-
-            break;
-    }
-}
 
 function  get_fixed_price(bidprice) {
     if (isNaN(bidprice))
@@ -907,11 +785,12 @@ document.addEventListener('show', function (event) {
             $("#auction_but").show();
             $("#changeuser_but").show();
             $("#new_but").show();
+            $("#settings_but").show();
             //$("#refresh_but").show();            
-            $("ons-list-item.Done").show();
-            $("ons-list-item.ASK").show();
-            $("ons-list-item.Cancel").show();
-            $("ons-list-item.New").show();
+            $("ons-list-item.done").show();
+            $("ons-list-item.ask").show();
+            $("ons-list-item.cancel").show();
+            $("ons-list-item.new").show();
             show_final_result();
             break;
         case "auctions":
@@ -919,21 +798,23 @@ document.addEventListener('show', function (event) {
             //$("#refresh_but").show();            
             break;
         case "details_page":
+            $("#settings_but").show();
             //load data from auction_data_module
-            $("#carousel").html(carousel_content);
-            var ind_page = document.querySelector("ons-carousel");
-            ind_page.populate_data = populate_data;
-            ind_page.populate_data();
+            $("#carousel").html(generate_carousel_content());//manage carousel initiation in a better way
+
+            curcar.populate_data = populate_data;
+            curcar.populate_data();
             break;
         case "password":
             $("#changeuser_but").show();
             $("#auction_but").hide();
             $("#new_but").hide();
+            $("#settings_but").show();
             //$("#refresh_but").hide();
-            $("ons-list-item.Done").hide();
-            $("ons-list-item.ASK").hide();
-            $("ons-list-item.Cancel").hide();
-            $("ons-list-item.New").hide();
+            $("ons-list-item.done").hide();
+            $("ons-list-item.ask").hide();
+            $("ons-list-item.cancel").hide();
+            $("ons-list-item.new").hide();            
             break;
         case "settings":
             $("#changeuser_but").show();
@@ -941,20 +822,20 @@ document.addEventListener('show', function (event) {
             $("#settings_but").hide();
             $("#new_but").hide();
             //$("#refresh_but").hide();
-            $("ons-list-item.Done").hide();
-            $("ons-list-item.ASK").hide();
-            $("ons-list-item.Cancel").hide();
-            $("ons-list-item.New").hide();
+            $("ons-list-item.done").hide();
+            $("ons-list-item.ask").hide();
+            $("ons-list-item.cancel").hide();
+            $("ons-list-item.new").hide();
             break;
         default:
             $("#auction_but").hide();
             $("#changeuser_but").hide();
             $("#new_but").hide();
             //$("#refresh_but").hide();
-            $("ons-list-item.Done").hide();
-            $("ons-list-item.ASK").hide();
-            $("ons-list-item.Cancel").hide();
-            $("ons-list-item.New").hide();
+            $("ons-list-item.done").hide();
+            $("ons-list-item.ask").hide();
+            $("ons-list-item.cancel").hide();
+            $("ons-list-item.new").hide();
             break;
     }
 
@@ -998,23 +879,7 @@ document.addEventListener('show', function (event) {
     }
 
 });
-function carousel_change(event)
-{
-    console.log(event.target);
-    if (event.target.classList.contains("maincarousel"))
-    {
-        console.log(event.activeIndex);
-        //temporary setup    
-        if (event.activeIndex !== 1 && ind_lot_index > 0 && ind_lot_index < current_array.length)
-        {
-            curcar = $("ons-carousel ons-carousel-item")[event.activeIndex].outerHTML;
-            init_car_cont();
-            $("#carousel").html(carousel_content);
-        }
-    } else {
-        //the other one
-    }
-}
+
 function setRange()
 {
     startIndex = $("#start_index").val();
@@ -1029,14 +894,15 @@ function setRange()
 
 function show_range()
 {
+    company_name = $("#auction_names").val();
     document.querySelector('#loading_circle').show();
     //local data first
     if (big_data)
     {
-        create_unique_list();
+        get_by_auction();
         console.log("creating the list");
     } else {
-        company_name = $("#auction_names").val();
+
         row_count = Number(document.querySelector("#auction_names")[document.querySelector("#auction_names").selectedIndex].getAttribute("count"));
         select_auction();
     }
@@ -1211,24 +1077,31 @@ window.fn.load = function (page) {
     switch (arguments[0])
     {
         case "all":
-            show_lists("all")
+            listtype = "all";
+            show_lists()
             break;
         case "done":
-            show_lists("done");
+            listtype = "done";
+            show_lists();
             break;
         case "ask":
-            show_lists("ask");
+            listtype = "ask";
+            show_lists();
             break;
         case "cancel":
-            show_lists("cancel");
+            listtype = "cancel";
+            show_lists();
             break;
         case "new":
-            show_lists("new");
+            listtype = "new";
+            show_lists();
             break;
         case "updated":
-            show_lists("updated");
+            listtype = "updated";
+            show_lists();
             break;
         case "refresh":
+            listtype = "new";
             get_auction_names();
             fn.load("auctions.html");
             //show_lists("refresh");
@@ -1248,12 +1121,12 @@ window.fn.load = function (page) {
 
 
 };
-function show_lists(listname)
+function show_lists()
 {
-
+    console.log(listtype);
     big_string = "";
     $("#main_table ons-list-item").addClass("hidden");
-    switch (listname)
+    switch (listtype)
     {
         case "all":
             $("#main_table ons-list-item.top_bid").removeClass("hidden");
@@ -1264,23 +1137,23 @@ function show_lists(listname)
             show_selected_chunk(startPage, startPage + Number(pager), indexName);
             break;
         case "done":
-            $("#main_table ons-list-item.Done").removeClass("hidden");
-            $("#heading2").text(company_name + ": " + $("#main_table tr.Done").length);
+            $("#main_table ons-list-item.done").removeClass("hidden");
+            $("#heading2").text(company_name + ": " + $("#main_table tr.done").length);
             indexName = "lotid";
-            get_by_status("Done"); //local_data_mobid
+            get_by_status(); //local_data_mobid
 
             break;
         case "ask":
-            $("#main_table ons-list-item.ASK").removeClass("hidden");
-            $("#heading2").text(company_name + ": " + $("#main_table tr.ASK").length);
+            $("#main_table ons-list-item.ask").removeClass("hidden");
+            $("#heading2").text(company_name + ": " + $("#main_table tr.ask").length);
             indexName = "lotid";
-            get_by_status("ASK");
+            get_by_status();
             break;
         case "cancel":
-            $("#main_table ons-list-item.Cancel").removeClass("hidden");
-            $("#heading2").text(company_name + ": " + $("#main_table tr.Cancel").length);
+            $("#main_table ons-list-item.cancel").removeClass("hidden");
+            $("#heading2").text(company_name + ": " + $("#main_table tr.cancel").length);
             indexName = "lotid";
-            get_by_status("Cancel");
+            get_by_status();
             break;
         case "new":
             $("#main_table ons-list-item.top_bid.new_data_undefined").removeClass("hidden");
